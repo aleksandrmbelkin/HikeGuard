@@ -14,23 +14,36 @@ class SemanticSearchEngine:
     def load_embeddings(self):
         with open('rag/model/embeddings.pkl', 'rb') as f:
             self.embeddings = pickle.load(f)
-        with open('rag/model/texts.pkl', 'rb') as f:
-            self.texts = pickle.load(f)
+        with open('rag/model/docs.pkl', 'rb') as f:
+            self.docs = pickle.load(f)
 
-    def search(self, query, top_k=5, min_score=0.0):
-        query_embedding = self.model.encode([f"query: {query.strip()}"], normalize_embeddings=True)
+    def search(self, query, top_k=5, min_score=0.3):
+        clean_query = ' '.join(query.strip().split())
+        query_for_embedding = f"query: {clean_query}"
+        
+        query_embedding = self.model.encode(
+            [query_for_embedding], 
+            normalize_embeddings=True,
+            show_progress_bar=False
+        )
+        
         similarities = cosine_similarity(query_embedding, self.embeddings)[0]
-        top_indices = np.argsort(similarities)[::-1][:top_k]
+        top_indices = np.argsort(similarities)[::-1]
         
         results = []
         for idx in top_indices:
             score = float(similarities[idx])
-            if score >= min_score:
+            if score >= min_score and len(results) < top_k:
+                doc = self.docs[idx]
                 results.append({
-                    'text': self.texts[idx],
+                    'text': doc['text'],
                     'score': score,
-                    'index': int(idx)
+                    'index': int(idx),
+                    'source': doc['source'],
+                    'chunk_id': doc['chunk_id']
                 })
+            elif len(results) >= top_k:
+                break
         
         return results
 
