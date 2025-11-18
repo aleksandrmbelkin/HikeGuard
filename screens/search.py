@@ -3,7 +3,6 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
-from kivy.uix.button import Button
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty
 from kivy.graphics import Rectangle, Color, RoundedRectangle
@@ -28,6 +27,7 @@ class SearchScreen(Screen):
         
         # Добавляем фон к главному контейнеру
         with main_layout.canvas.before:
+            Color(1, 1, 1, 1)  # Белый фон чтобы перекрыть затемнение
             self.main_bg = Rectangle(
                 pos=main_layout.pos,
                 size=main_layout.size,
@@ -49,7 +49,6 @@ class SearchScreen(Screen):
         # Отступ перед поиском
         main_layout.add_widget(Widget(size_hint_y=0.15))
         
-        
         # Контейнер поиска
         search_layout = BoxLayout(
             size_hint_y=None,
@@ -69,10 +68,16 @@ class SearchScreen(Screen):
             multiline=False,
             background_normal='',
             background_active='',
+            background_disabled_normal='',
+            disabled_foreground_color=(0, 0, 0, 1),
+            write_tab=False,
         )
+        # Отключаем эффект затемнения при фокусе
+        self.search_input.bind(focus=self.on_input_focus)
 
         # Фон поиска
         with search_input_container.canvas.before:
+            Color(1, 1, 1, 1)  # Белый фон
             self.search_input_bg = RoundedRectangle(
                 pos=self.search_input.pos,
                 size=self.search_input.size,
@@ -86,27 +91,25 @@ class SearchScreen(Screen):
         search_button_container = BoxLayout(
             size_hint_x=0.2,
         )
-        search_button = Button(
-            background_color=(0, 0, 0, 0),
-            background_normal='',
-            background_disabled_normal='',
-        )
-        search_button.bind(on_press=self.search)
-
+        
+        # Создаем виджет вместо кнопки
+        search_button = Widget()
+        
         # Фон кнопки поиска
         with search_button_container.canvas.before:
-            self.search_button_bg = RoundedRectangle(
+            Color(1, 1, 1, 1)  # Белый фон
+            self.search_button_bg = Rectangle(
                 pos=search_button.pos,
                 size=search_button.size,
-                radius=[dp(15),],
-                source='data/assets/background.png'
+                source='data/assets/search.png'
             )
         search_button_container.bind(
             pos=self.update_search_button_bg,
             size=self.update_search_button_bg,
-            # source=self.update_search_button_bg
         )
 
+        # Обрабатываем нажатие на виджет
+        search_button.bind(on_touch_down=self.on_search_button_touch)
         search_button_container.add_widget(search_button)
         search_layout.add_widget(search_button_container)
         main_layout.add_widget(search_layout)
@@ -152,14 +155,17 @@ class SearchScreen(Screen):
             background_normal='',
             background_active='',
             input_filter='int',
-            size_hint_x=0.2
+            size_hint_x=0.2,
+            background_disabled_normal='',
+            disabled_foreground_color=(0, 0, 0, 1),
+            write_tab=False,
         )
         self.results_input.bind(text=self.results_change)
-        self.results_input.bind(focus=self.results_focus)
+        self.results_input.bind(focus=self.on_input_focus)
         
         # Добавляем фон к контейнеру
         with results_layout.canvas.before:
-            Color(1, 1, 1, 1)
+            Color(1, 1, 1, 1)  # Белый фон
             self.kolvo_bg = RoundedRectangle(
                 pos=results_layout.pos,
                 size=results_layout.size,
@@ -187,26 +193,39 @@ class SearchScreen(Screen):
             height=dp(70),
         )
         
-        # Кнопка БД
-        database_button = Button(
-            text='База данных',
-            font_size=dp(24),
-            bold=True,
-            background_color=(0, 0, 0, 0),
-            color=(1, 1, 1, 1),
-            background_normal=''
-        )
-        database_button.bind(on_press=self.open_database)
+        # Кнопка БД - также используем виджет
+        database_button = Widget()
+        database_button.bind(on_touch_down=self.on_database_button_touch)
 
         # Добавляем фон к контейнеру
         with database_button_container.canvas.before:
-            Color(0.2, 0.2, 0.2, 1)
+            Color(1, 1, 1, 1)  # Белый фон
             self.database_bg = RoundedRectangle(
                 pos=database_button.pos,
                 size=database_button.size,
                 radius=[dp(20),]
             )
-        database_button_container.bind(pos=self.update_database_button_bg, size=self.update_database_button_bg)
+            
+            # Текст кнопки БД
+            Color(0.2, 0.2, 0.2, 1)
+            self.database_bg_color = RoundedRectangle(
+                pos=database_button.pos,
+                size=database_button.size,
+                radius=[dp(20),]
+            )
+            
+            Color(1, 1, 1, 1)
+            self.database_label = Label(
+                text='База данных',
+                font_size=dp(24),
+                bold=True,
+                pos=database_button.pos,
+                size=database_button.size
+            )
+        database_button_container.bind(
+            pos=self.update_database_button_bg, 
+            size=self.update_database_button_bg
+        )
 
         database_button_container.add_widget(database_button)
         main_layout.add_widget(database_button_container)
@@ -215,44 +234,68 @@ class SearchScreen(Screen):
         main_layout.add_widget(Widget(size_hint_y=0.05))
         self.add_widget(main_layout)
     
+    def on_input_focus(self, instance, value):
+        # Принудительно обновляем цвет фона чтобы избежать затемнения
+        if hasattr(instance, 'background_color'):
+            instance.background_color = instance.background_color
+    
     '''Обновления фонов:'''
-    def update_main_bg(self, instance, value): # Обновление главного фона
+    def update_main_bg(self, instance, value):
         self.main_bg.pos = instance.pos
         self.main_bg.size = instance.size
     
-    def update_search_input_bg(self, instance, value): # Обновление фона для контейнера поиска
+    def update_search_input_bg(self, instance, value):
         self.search_input_bg.pos = instance.pos
         self.search_input_bg.size = instance.size
 
-    def update_search_button_bg(self, instance, value): # Обновление фона кнопки поиска
+    def update_search_button_bg(self, instance, value):
         self.search_button_bg.pos = instance.pos
         self.search_button_bg.size = instance.size
         
-    def update_results_layout_bg(self, instance, value): # Обновление фона контейнера результатов
+    def update_results_layout_bg(self, instance, value):
         self.kolvo_bg.pos = instance.pos
         self.kolvo_bg.size = instance.size
     
-    def update_results_separator(self, instance, value): # Обновление разделителя результатов
+    def update_results_separator(self, instance, value):
         self.results_separator_rect.pos = instance.pos
         self.results_separator_rect.size = instance.size
     
-    def update_separator(self, instance, value): # Обновление разделителя
+    def update_separator(self, instance, value):
         self.separator_rect.pos = instance.pos
         self.separator_rect.size = instance.size
     
-    def update_database_button_bg(self, instance, value): # Обновление кнопки БД
+    def update_database_button_bg(self, instance, value):
         self.database_bg.pos = instance.pos
         self.database_bg.size = instance.size
+        self.database_bg_color.pos = instance.pos
+        self.database_bg_color.size = instance.size
+        if hasattr(self, 'database_label'):
+            self.database_label.pos = instance.pos
+            self.database_label.size = instance.size
+
+    '''Обработчики нажатий на кастомные кнопки'''
+    def on_search_button_touch(self, instance, touch):
+        if instance.collide_point(*touch.pos):
+            self.search()
+            return True
+        return False
+    
+    def on_database_button_touch(self, instance, touch):
+        if instance.collide_point(*touch.pos):
+            self.open_database()
+            return True
+        return False
 
     '''Обработчики взаимодействий:'''
-    def search(self, instance): # Поиск
+    def search(self):
         search_text = self.search_input.text
         if search_text:
+            # Передаем данные в экран результатов
             results_screen = self.manager.get_screen('results')
-            results_screen.request(search_text, self.results_count)
+            results_screen.show_results(search_text, self.results_count)
             self.manager.current = 'results'
 
-    def results_change(self, instance, value): # Изменение количества результатов
+    def results_change(self, instance, value):
         if value and value.isdigit():
             num = int(value)
             if num < 1:
@@ -266,16 +309,16 @@ class SearchScreen(Screen):
                     instance.text = str(self.results_count)
             else:
                 self.results_count = num
-        elif value == '': # Если поле пустое, устанавливаем 1
+        elif value == '':
             self.results_count = 1
-        else: # Если введены не цифры, восстанавливаем предыдущее значение
+        else:
             instance.text = str(self.results_count)
     
-    def results_focus(self, instance, value): # Обработчик потери фокуса на поле количества результатов
+    def results_focus(self, instance, value):
         if not value:
             if not instance.text:
                 instance.text = '1'
                 self.results_count = 1
     
-    def open_database(self, instance): # Открытие БД
+    def open_database(self):
         self.manager.current = 'database'

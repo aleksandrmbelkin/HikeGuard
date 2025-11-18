@@ -1,6 +1,5 @@
 import numpy as np
-import pickle
-import os
+import pickle, os
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 

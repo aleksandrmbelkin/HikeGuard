@@ -5,7 +5,6 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.scrollview import ScrollView
 from kivy.graphics import Rectangle, Color, RoundedRectangle
-from kivy.properties import StringProperty, NumericProperty
 from kivy.metrics import dp
 
 # Бэкенд
@@ -13,23 +12,37 @@ from rag.search_engine import *
 
 # Экран Результатов
 class ResultsScreen(Screen):
-    results = [{'text': 'Перелом, вывих: 1. Сначала смотрим. Особенно, если пострадавший без сознания или упал с высоты на спину и область головы. При риске смещения обломков, вероятном переломе позвонков, костей таза двигать человека категорически нельзя. Первая помощь оказывается на месте. При незначительных травмах, например, растяжении, можно наложить тугую повязку, а дальнейшую помощь оказать в более удобном месте или вернуться для этого в лагерь. 2. Обезболивание. В аптечке первой помощи ПИКа есть нимесил, кетанов', 'score': 0.8382720947265625, 'index': 20, 'source': 'first_aid_1.txt', 'para_id': 6, 'chunk_id': 0}, {'text': 'версального рецепта тут нет. Главное - обездвижить кость плотной повязкой и шиной в двух местах - выше и ниже перелома. Ноги можно прибинтовать друг к другу, руки к туловищу или повесить в “косынку”, одетую на шею, использовать импровизированные шины из веток дерева, лыжных палок, лыж. При переломах позвоночника, ребер и костей таза пострадавший с минимумом движений укладывается на широкую плоскую шину (доска, фанера, сноуборд без креплений и т.п.) и фиксируется для исключения смещения отломков.', 'score': 0.8312132358551025, 'index': 22, 'source': 'first_aid_1.txt', 'para_id': 6, 'chunk_id': 2}, {'text': 'овании по маршруту принимать в зависимости от состояния больного.', 'score': 0.7951524257659912, 'index': 7, 'source': 'first_aid_1.txt', 'para_id': 0, 'chunk_id': 1}]
-    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.name = 'results'
-        self.create_ui()
+        self.results = []
+        self.current_query = ""
 
-    def request(self, query, results_count):
+    def show_results(self, query, results_count):
+        """Основной метод для отображения результатов"""
+        self.current_query = query
+        self.results_count = results_count
+        
+        # Получаем результаты из поискового движка
         search_engine = create_search_engine()
         self.results = search_engine.search(query, top_k=results_count)
+        
+        # Обновляем интерфейс с новыми результатами
+        self.update_results_display()
+    
+    def update_results_display(self):
+        """Обновляет отображение результатов"""
+        # Очищаем предыдущий контент
+        self.clear_widgets()
+        self.create_ui()
     
     def create_ui(self):
+        """Создает UI с результатами"""
         # Главный контейнер
         main_layout = BoxLayout(
             orientation='vertical',
-            padding=[dp(20), dp(20), dp(20), dp(20)],
-            spacing=dp(15)
+            padding=[dp(15), dp(15), dp(15), dp(15)],
+            spacing=dp(12)
         )
 
         # Добавляем фон к главному контейнеру
@@ -42,45 +55,45 @@ class ResultsScreen(Screen):
         main_layout.bind(pos=self.update_main_bg, size=self.update_main_bg)
         
         # Заголовок
-        title = Label(
+        title_label = Label(
             text='Результаты:',
-            font_size=dp(38),
+            font_size=dp(32),
             bold=True,
             color=(0.1, 0.1, 0.1, 1),
-            size_hint_y=0.1,
+            size_hint_y=0.08,
             halign='center'
         )
-        main_layout.add_widget(title)
+        main_layout.add_widget(title_label)
         
         # Контейнер для контента
-        content_scroll = ScrollView()
+        content_scroll = ScrollView(
+            do_scroll_x=False,
+            bar_width=dp(8)
+        )
         content_layout = BoxLayout(
             size_hint_y=None,
             orientation='vertical',
-            spacing=dp(15),
-            padding=[dp(5), dp(5), dp(5), dp(5)]
+            spacing=dp(12)
         )
         content_layout.bind(minimum_height=content_layout.setter('height'))
         
-        # Результаты
+        # Добавляем карточки результатов
         for i, result in enumerate(self.results, 1):
-            # Создаем карточку результата с автоматической высотой
             result_card = self.create_result_card(i, result)
             content_layout.add_widget(result_card)
 
         content_scroll.add_widget(content_layout)
         main_layout.add_widget(content_scroll)
 
-        # Контейнер для кнопки возврата
+        # Кнопка возврата
         back_button_container = BoxLayout(
             size_hint_y=None,
-            height=dp(60),
+            height=dp(55),
         )
         
-        # Кнопка возврата
         back_button = Button(
             text='Назад',
-            font_size=dp(20),
+            font_size=dp(18),
             bold=True,
             background_color=(0, 0, 0, 0),
             color=(1, 1, 1, 1),
@@ -94,7 +107,7 @@ class ResultsScreen(Screen):
             self.back_button_bg = RoundedRectangle(
                 pos=back_button_container.pos,
                 size=back_button_container.size,
-                radius=[dp(20),]
+                radius=[dp(15),]
             )
         back_button_container.bind(pos=self.update_back_button_bg, size=self.update_back_button_bg)
         back_button_container.add_widget(back_button)
@@ -103,116 +116,90 @@ class ResultsScreen(Screen):
         self.add_widget(main_layout)
     
     def create_result_card(self, index, result):
-        """Создает карточку результата с автоматической высотой"""
-        # Главный контейнер для одного результата
+        """Создает карточку результата"""
+        # Главный контейнер
         result_container = BoxLayout(
             orientation='vertical',
             size_hint_y=None,
-            spacing=dp(8),
-            padding=[dp(10), dp(10)]
+            spacing=dp(6),
+            padding=[dp(8), dp(8)]
         )
         
-        # Рассчитываем высоту на основе длины текста
-        text_length = len(result['text'])
-        if text_length < 150:
-            container_height = dp(140)
-        elif text_length < 300:
-            container_height = dp(180)
-        else:
-            container_height = dp(220)
-        
-        result_container.height = container_height
-        
-        # Фон для всей карточки
+        # Фон для карточки
         with result_container.canvas.before:
-            Color(0.95, 0.95, 0.95, 0.9)  # Светло-серый фон с прозрачностью
+            Color(0.95, 0.95, 0.95, 0.9)
             card_bg = RoundedRectangle(
                 pos=result_container.pos,
                 size=result_container.size,
-                radius=[dp(15),]
+                radius=[dp(12),]
             )
         
-        # Привязка фона карточки
+        # Привязка фона
         result_container.bind(
             pos=lambda instance, value, bg=card_bg: setattr(bg, 'pos', instance.pos),
             size=lambda instance, value, bg=card_bg: setattr(bg, 'size', instance.size)
         )
         
-        # Заголовок результата
-        header_layout = BoxLayout(
-            orientation='horizontal',
-            size_hint_y=0.2,
-            spacing=dp(10)
-        )
-        
-        result_title = Label(
-            text=f"[b]Результат {index}:[/b]",
-            font_size=dp(18),
-            color=(0.1, 0.1, 0.1, 1),
-            halign='left',
-            markup=True,
-            size_hint_x=0.7
-        )
-        
-        score_label = Label(
-            text=f"Совпадение: {result['score']:.1%}",
-            font_size=dp(14),
-            color=(0.4, 0.4, 0.4, 1),
-            halign='right',
-            size_hint_x=0.3
-        )
-        
-        header_layout.add_widget(result_title)
-        header_layout.add_widget(score_label)
-        result_container.add_widget(header_layout)
-        
-        # Текст результата
+        # Текст результата с номером
         text_container = BoxLayout(
             orientation='vertical',
-            size_hint_y=0.65
+            size_hint_y=None,
+            padding=[dp(12), dp(12), dp(12), dp(8)]  # Увеличил верхний отступ
         )
         
-        # Обрезаем текст если слишком длинный
-        display_text = result['text']
-        if len(display_text) > 250:
-            display_text = display_text[:250] + "..."
+        # Текст с жирным номером и отступом
+        display_text = f"\n[b]Результат {index}:[/b]\n\n{result['text']}"  # Добавил переносы для отступа
         
+        # Лейбл для текста
         result_text = Label(
             text=display_text,
-            font_size=dp(16),
+            font_size=dp(14),
             color=(0.2, 0.2, 0.2, 1),
             halign='left',
             valign='top',
-            text_size=(text_container.width - dp(20), None),
-            size_hint_y=1.0
+            text_size=(text_container.width - dp(24), None),
+            size_hint_y=None,
+            markup=True
         )
         
-        # Обновляем text_size при изменении размера
-        def update_text_size(container, size):
-            result_text.text_size = (container.width - dp(20), None)
+        # Функции для обновления размеров
+        def update_text_properties(container_instance, size):
+            result_text.text_size = (container_instance.width - dp(24), None)
+            
+        def update_text_height(label_instance, texture_size):
+            if texture_size[1] > 0:
+                text_height = texture_size[1] + dp(20)
+                min_height = dp(80)
+                max_height = dp(400)
+                calculated_height = max(min_height, min(text_height, max_height))
+                label_instance.height = calculated_height
+                text_container.height = calculated_height
+                result_container.height = text_container.height + dp(40)
         
-        text_container.bind(size=update_text_size)
+        # Привязываем обновление размеров
+        text_container.bind(size=update_text_properties)
+        result_text.bind(texture_size=update_text_height)
+        
         text_container.add_widget(result_text)
         result_container.add_widget(text_container)
         
-        # Контейнер для кнопки "подробнее"
+        # Кнопка "подробнее"
         button_container = BoxLayout(
-            size_hint_y=0.15,
-            size_hint_x=0.35,
+            size_hint_y=None,
+            height=dp(35),
+            size_hint_x=0.4,
             pos_hint={'center_x': 0.5}
         )
         
-        # Кнопка "подробнее"
         details_button = Button(
             text='подробнее',
-            font_size=dp(14),
+            font_size=dp(12),
             size_hint=(1, 1),
             background_color=(0.5, 0.5, 0.5, 1),
             color=(1, 1, 1, 1),
             background_normal=''
         )
         
-        # Привязываем кнопку к текущему результату
         details_button.result_index = index - 1
         details_button.bind(on_press=self.show_details)
         
@@ -222,10 +209,9 @@ class ResultsScreen(Screen):
             button_bg = RoundedRectangle(
                 pos=button_container.pos,
                 size=button_container.size,
-                radius=[dp(8),]
+                radius=[dp(6),]
             )
         
-        # Привязка фона кнопки
         button_container.bind(
             pos=lambda instance, value, bg=button_bg: setattr(bg, 'pos', instance.pos),
             size=lambda instance, value, bg=button_bg: setattr(bg, 'size', instance.size)
@@ -236,25 +222,21 @@ class ResultsScreen(Screen):
         
         return result_container
     
-    '''Обновления фонов:'''
     def update_main_bg(self, instance, value):
-        self.main_bg.pos = instance.pos
-        self.main_bg.size = instance.size
+        if hasattr(self, 'main_bg'):
+            self.main_bg.pos = instance.pos
+            self.main_bg.size = instance.size
 
     def update_back_button_bg(self, instance, value):
-        self.back_button_bg.pos = instance.pos
-        self.back_button_bg.size = instance.size
+        if hasattr(self, 'back_button_bg'):
+            self.back_button_bg.pos = instance.pos
+            self.back_button_bg.size = instance.size
     
     def show_details(self, instance):
         result_index = instance.result_index
         if 0 <= result_index < len(self.results):
             selected_result = self.results[result_index]
-            print(f"Подробнее для результата {result_index + 1}:")
-            print(f"Текст: {selected_result['text']}")
-            print(f"Источник: {selected_result['source']}")
-            print(f"Совпадение: {selected_result['score']:.1%}")
-            # Здесь можно добавить переход на экран с детальной информацией
+            print(f"Подробнее для результата {result_index + 1}")
 
-    '''Обработчики взаимодействий:'''
     def go_back(self, instance):
         self.manager.current = 'search'
