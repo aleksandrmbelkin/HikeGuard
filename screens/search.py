@@ -1,4 +1,3 @@
-# Kivy
 from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -101,7 +100,7 @@ class SearchScreen(Screen):
             self.search_button_bg = Rectangle(
                 pos=search_button.pos,
                 size=search_button.size,
-                source='data/assets/search.png'
+                source='data/assets/buttons/search.png'
             )
         search_button_container.bind(
             pos=self.update_search_button_bg,
@@ -289,7 +288,7 @@ class SearchScreen(Screen):
     '''Обработчики взаимодействий:'''
     def search(self):
         search_text = self.search_input.text
-        if search_text:
+        if search_text.strip():
             # Передаем данные в экран результатов
             results_screen = self.manager.get_screen('results')
             results_screen.show_results(search_text, self.results_count)

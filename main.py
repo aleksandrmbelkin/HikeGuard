@@ -8,6 +8,7 @@ from kivy.uix.screenmanager import FadeTransition
 from screens.search import SearchScreen
 from screens.database import DatabaseScreen
 from screens.results import ResultsScreen
+from screens.file import FileScreen 
 
 
 class HikeGuardApp(App):
@@ -33,6 +34,10 @@ class HikeGuardApp(App):
         # Экран базы данных
         database_screen = DatabaseScreen()
         self.screen_manager.add_widget(database_screen)
+
+        # Экран детальной информации
+        details_screen = FileScreen()
+        self.screen_manager.add_widget(details_screen)
 
         self.screen_manager.current = 'search'
     

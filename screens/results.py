@@ -1,4 +1,3 @@
-# Kivy
 from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -7,7 +6,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.graphics import Rectangle, Color, RoundedRectangle
 from kivy.metrics import dp
 
-# Бэкенд
+# Поиск
 from rag.search_engine import *
 
 # Экран Результатов
@@ -183,7 +182,7 @@ class ResultsScreen(Screen):
         text_container.add_widget(result_text)
         result_container.add_widget(text_container)
         
-        # Кнопка "подробнее"
+        # Кнопка "Подробнее"
         button_container = BoxLayout(
             size_hint_y=None,
             height=dp(35),
@@ -192,7 +191,7 @@ class ResultsScreen(Screen):
         )
         
         details_button = Button(
-            text='подробнее',
+            text='Подробнее',
             font_size=dp(12),
             size_hint=(1, 1),
             background_color=(0.5, 0.5, 0.5, 1),
@@ -200,8 +199,9 @@ class ResultsScreen(Screen):
             background_normal=''
         )
         
-        details_button.result_index = index - 1
-        details_button.bind(on_press=self.show_details)
+        # Сохраняем всю информацию о результате для кнопки
+        details_button.result_data = result
+        details_button.bind(on_press=self.show_file)
         
         # Фон для кнопки
         with button_container.canvas.before:
@@ -232,11 +232,11 @@ class ResultsScreen(Screen):
             self.back_button_bg.pos = instance.pos
             self.back_button_bg.size = instance.size
     
-    def show_details(self, instance):
-        result_index = instance.result_index
-        if 0 <= result_index < len(self.results):
-            selected_result = self.results[result_index]
-            print(f"Подробнее для результата {result_index + 1}")
+    def show_file(self, instance):
+        result_data = instance.result_data
+        file_screen = self.manager.get_screen('file')
+        file_screen.show_file(result_data)
+        self.manager.current = 'file'
 
     def go_back(self, instance):
         self.manager.current = 'search'

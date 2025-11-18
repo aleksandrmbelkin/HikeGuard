@@ -28,44 +28,6 @@ class EmbeddingCreator:
         with open('rag/model/docs.pkl', 'wb') as f:
             pickle.dump(docs, f)
 
-def split_into_sentences(text):
-    # Сохраняем знаки препинания при разделении
-    sentences = re.split(r'([.!?]+)', text)
-    sentences = [s.strip() for s in sentences if s.strip()]
-    
-    # Объединяем предложения с их знаками препинания
-    result = []
-    i = 0
-    while i < len(sentences):
-        if i + 1 < len(sentences) and re.match(r'[.!?]+', sentences[i + 1]):
-            result.append(sentences[i] + sentences[i + 1])
-            i += 2
-        else:
-            result.append(sentences[i])
-            i += 1
-    
-    return result
-
-def group_sentences_by_paragraphs(paragraphs, group_size=3):
-    """Группирует предложения внутри каждого абзаца отдельно"""
-    all_chunks = []
-    
-    for paragraph in paragraphs:
-        if not paragraph.strip():
-            continue
-            
-        sentences = split_into_sentences(paragraph)
-        
-        # Группируем предложения внутри этого абзаца
-        paragraph_chunks = []
-        for i in range(0, len(sentences), group_size):
-            chunk = ' '.join(sentences[i:i + group_size])
-            paragraph_chunks.append(chunk)
-        
-        all_chunks.extend(paragraph_chunks)
-    
-    return all_chunks
-
 def cutting_up_texts(manual_paths):
     docs = []
     for p in manual_paths:
@@ -76,20 +38,29 @@ def cutting_up_texts(manual_paths):
         
         text = Path(path).read_text(encoding="utf-8", errors="ignore")
         
-        # Сначала разделяем на абзацы
-        paragraphs = re.split(r'\n', text)
-        paragraphs = [p.strip() for p in paragraphs if p.strip()]
+        # Разделяем текст на страницы по разделителю
+        page_separator = r'--------------------------- Страница \d+ ---------------------------'
+        pages = re.split(page_separator, text)
         
-        # Группируем предложения внутри каждого абзаца отдельно
-        chunks = group_sentences_by_paragraphs(paragraphs, group_size=3)
+        # Извлекаем номера страниц из разделителей
+        page_numbers = re.findall(r'Страница (\d+)', text)
         
-        for i, chunk in enumerate(chunks):
-            chunk = chunk.strip()
-            if len(chunk) > 30:
+        for page_num, page_text in zip(page_numbers, pages[1:], strict=False):
+            page_text = page_text.strip()
+            if not page_text:
+                continue
+                
+            # Разделяем страницу на абзацы по переносам строк
+            paragraphs = page_text.split('\n')
+            paragraphs = [p.strip() for p in paragraphs if p.strip()]
+            
+            for i, paragraph in enumerate(paragraphs):
+                paragraph = paragraph.strip()
                 docs.append({
                     "source": str(path.name), 
+                    "page": int(page_num),
                     "chunk_id": i, 
-                    "text": chunk
+                    "text": paragraph
                 })
     
     print(f"Создано чанков: {len(docs)}")
@@ -97,14 +68,14 @@ def cutting_up_texts(manual_paths):
 
 def create_default_embeddings():
     print('Создание эмбеддингов')
-    files = [f'data/documents/{file}' for file in os.listdir("data/documents")]
+    files = [f'data/documents/txt/{file}' for file in os.listdir("data/documents/txt")]
     docs = cutting_up_texts(files)
     
     creator = EmbeddingCreator()
     creator.load_model()
     embeddings = creator.create_embeddings(docs)
     creator.save_embeddings(embeddings, docs)
-    print(f'Эмбеддинги сохранены.')
+    print(f'Эмбеддинги сохранены. Документов: {len(docs)}')
 
 if __name__ == "__main__":
     create_default_embeddings()

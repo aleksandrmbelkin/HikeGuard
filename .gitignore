@@ -1,5 +1,6 @@
 # RAG
 rag/model/
+data/documents/pdf/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
