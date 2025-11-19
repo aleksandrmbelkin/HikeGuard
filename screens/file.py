@@ -62,10 +62,6 @@ class FileScreen(Screen):
             keep_ratio=True
         )
         
-        # Добавляем обработчик двойного тапа для полноэкранного режима
-        self.pdf_image.bind(on_touch_down=self.on_image_touch)
-        self.last_touch_time = 0
-        
         pdf_container.add_widget(self.pdf_image)
         main_layout.add_widget(pdf_container)
         
@@ -140,44 +136,10 @@ class FileScreen(Screen):
         self.add_widget(main_layout)
         self.load_pdf_page()
     
-    def on_image_touch(self, instance, touch):
-        """Обработчик касания изображения для полноэкранного режима"""
-        if instance.collide_point(*touch.pos):
-            current_time = touch.time_start
-            # Проверяем двойное касание (в пределах 0.3 секунды)
-            if current_time - self.last_touch_time < 0.3:
-                self.toggle_fullscreen()
-                return True
-            self.last_touch_time = current_time
-        return False
-    
-    def toggle_fullscreen(self):
-        """Переключает полноэкранный режим"""
-        self.fullscreen_mode = not self.fullscreen_mode
-        
-        if self.fullscreen_mode:
-            # Входим в полноэкранный режим - скрываем элементы управления
-            self.nav_container.opacity = 0
-            self.nav_container.disabled = True
-            self.back_button_container.opacity = 0
-            self.back_button_container.disabled = True
-            
-            # Увеличиваем область изображения
-            self.pdf_image.parent.size_hint_y = 0.95
-        else:
-            # Выходим из полноэкранного режима - показываем элементы управления
-            self.nav_container.opacity = 1
-            self.nav_container.disabled = False
-            self.back_button_container.opacity = 1
-            self.back_button_container.disabled = False
-            
-            # Возвращаем нормальный размер изображения
-            self.pdf_image.parent.size_hint_y = 0.82
-    
     def load_pdf_page(self):
         try:
             source_file = self.current_result.get('source')
-            pdf_path = os.path.join('data/documents/pdf', DOCUMENTS[source_file])
+            pdf_path = os.path.join('data/documents/books', DOCUMENTS[source_file])
             
             if os.path.exists(pdf_path):
                 if self.pdf_document:
