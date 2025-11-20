@@ -1,5 +1,6 @@
 # RAG
 rag/model/
+qa/model/
 data/documents/books/
 
 # Byte-compiled / optimized / DLL files
