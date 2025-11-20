@@ -1,4 +1,3 @@
-# Kivy
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from kivy.core.window import Window
@@ -42,7 +41,6 @@ class HikeGuardApp(App):
         self.screen_manager.current = 'search'
     
     def on_stop(self):
-        # Закрытие приложения
         print("Приложение закрывается")
 
 
