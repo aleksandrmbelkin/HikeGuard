@@ -11,6 +11,7 @@ from io import BytesIO
 import os, fitz
 
 DOCUMENTS = {
+    "Полное руководство по выживанию": "Polnoe_rukovodstvo_po_vizivaniyu.pdf",
     'osnovi.txt': 'Polnoe_rukovodstvo_po_vizivaniyu.pdf'
 }
 
@@ -24,7 +25,8 @@ class FileScreen(Screen):
         self.total_pages = 0
         self.fullscreen_mode = False
         
-    def show_file(self, result_data):
+    def show_file(self, result_data, from_page):
+        self.from_page = from_page
         self.current_result = result_data
         self.current_page = result_data.get('page', 1) - 1
         self.fullscreen_mode = False
@@ -201,7 +203,7 @@ class FileScreen(Screen):
         if self.pdf_document:
             self.pdf_document.close()
             self.pdf_document = None
-        self.manager.current = 'results'
+        self.manager.current = self.from_page
     
     def on_leave(self):
         if self.pdf_document:

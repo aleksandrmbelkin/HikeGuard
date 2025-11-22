@@ -235,7 +235,7 @@ class ResultsScreen(Screen):
     def show_file(self, instance):
         result_data = instance.result_data
         file_screen = self.manager.get_screen('file')
-        file_screen.show_file(result_data)
+        file_screen.show_file(result_data, 'results')
         self.manager.current = 'file'
 
     def go_back(self, instance):
