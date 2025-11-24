@@ -59,7 +59,6 @@ def cutting_up_texts(manual_paths):
                 docs.append({
                     "source": str(path.name), 
                     "page": int(page_num),
-                    "chunk_id": i, 
                     "text": paragraph
                 })
     
