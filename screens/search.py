@@ -187,47 +187,47 @@ class SearchScreen(Screen):
         main_layout.add_widget(Widget(size_hint_y=0.4))
         
         # Контейнер для кнопки БД
-        database_button_container = BoxLayout(
+        library_button_container = BoxLayout(
             size_hint_y=None,
             height=dp(70),
         )
         
         # Кнопка БД - также используем виджет
-        database_button = Widget()
-        database_button.bind(on_touch_down=self.on_database_button_touch)
+        library_button = Widget()
+        library_button.bind(on_touch_down=self.on_library_button_touch)
 
         # Добавляем фон к контейнеру
-        with database_button_container.canvas.before:
+        with library_button_container.canvas.before:
             Color(1, 1, 1, 1)  # Белый фон
-            self.database_bg = RoundedRectangle(
-                pos=database_button.pos,
-                size=database_button.size,
+            self.library_bg = RoundedRectangle(
+                pos=library_button.pos,
+                size=library_button.size,
                 radius=[dp(20),]
             )
             
             # Текст кнопки БД
             Color(0.2, 0.2, 0.2, 1)
-            self.database_bg_color = RoundedRectangle(
-                pos=database_button.pos,
-                size=database_button.size,
+            self.library_bg_color = RoundedRectangle(
+                pos=library_button.pos,
+                size=library_button.size,
                 radius=[dp(20),]
             )
             
             Color(1, 1, 1, 1)
-            self.database_label = Label(
-                text='База данных',
+            self.library_label = Label(
+                text='Библиотека',
                 font_size=dp(24),
                 bold=True,
-                pos=database_button.pos,
-                size=database_button.size
+                pos=library_button.pos,
+                size=library_button.size
             )
-        database_button_container.bind(
-            pos=self.update_database_button_bg, 
-            size=self.update_database_button_bg
+        library_button_container.bind(
+            pos=self.update_library_button_bg, 
+            size=self.update_library_button_bg
         )
 
-        database_button_container.add_widget(database_button)
-        main_layout.add_widget(database_button_container)
+        library_button_container.add_widget(library_button)
+        main_layout.add_widget(library_button_container)
         
         # Отступ внизу
         main_layout.add_widget(Widget(size_hint_y=0.05))
@@ -263,14 +263,14 @@ class SearchScreen(Screen):
         self.separator_rect.pos = instance.pos
         self.separator_rect.size = instance.size
     
-    def update_database_button_bg(self, instance, value):
-        self.database_bg.pos = instance.pos
-        self.database_bg.size = instance.size
-        self.database_bg_color.pos = instance.pos
-        self.database_bg_color.size = instance.size
-        if hasattr(self, 'database_label'):
-            self.database_label.pos = instance.pos
-            self.database_label.size = instance.size
+    def update_library_button_bg(self, instance, value):
+        self.library_bg.pos = instance.pos
+        self.library_bg.size = instance.size
+        self.library_bg_color.pos = instance.pos
+        self.library_bg_color.size = instance.size
+        if hasattr(self, 'library_label'):
+            self.library_label.pos = instance.pos
+            self.library_label.size = instance.size
 
     '''Обработчики нажатий на кастомные кнопки'''
     def on_search_button_touch(self, instance, touch):
@@ -279,9 +279,9 @@ class SearchScreen(Screen):
             return True
         return False
     
-    def on_database_button_touch(self, instance, touch):
+    def on_library_button_touch(self, instance, touch):
         if instance.collide_point(*touch.pos):
-            self.open_database()
+            self.open_library()
             return True
         return False
 
@@ -319,5 +319,5 @@ class SearchScreen(Screen):
                 instance.text = '1'
                 self.results_count = 1
     
-    def open_database(self):
-        self.manager.current = 'database'
+    def open_library(self):
+        self.manager.current = 'library'

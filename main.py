@@ -6,7 +6,7 @@ from kivy.core.window import Window
 
 # Экраны
 from screens.search import SearchScreen
-from screens.database import DatabaseScreen
+from screens.library import LibraryScreen
 from screens.results import ResultsScreen
 from screens.file import FileScreen 
 
@@ -33,7 +33,7 @@ class HikeGuardApp(App):
         self.screen_manager.add_widget(results_screen)
 
         # Экран базы данных
-        database_screen = DatabaseScreen()
+        database_screen = LibraryScreen()
         self.screen_manager.add_widget(database_screen)
 
         # Экран детальной информации

@@ -9,16 +9,17 @@ from kivy.graphics import Rectangle, Color, RoundedRectangle
 from kivy.metrics import dp
 
 # Экран БД
-class DatabaseScreen(Screen):
+class LibraryScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.name = 'database'
+        self.name = 'library'
         
         # Список книг для отображения (позже можно заполнить данными)
         self.books_data = [
             {
                 "name": "Полное руководство по выживанию", 
                 "chapters": [
+                    ("Начало", 1),
                     ("Введение", 8),
                     ("1. Основы", 12),
                     ("2. Стратегия", 50),
@@ -58,7 +59,7 @@ class DatabaseScreen(Screen):
         
         # Заголовок
         title = Label(
-            text='База данных',
+            text='Библиотека',
             font_size=dp(32),
             bold=True,
             color=(0.2, 0.2, 0.2, 1),  # Темно-серый текст
@@ -205,7 +206,7 @@ class DatabaseScreen(Screen):
     def show_file(self, result_data):
         """Обработчик нажатия на главу"""
         file_screen = self.manager.get_screen('file')
-        file_screen.show_file(result_data, 'database')
+        file_screen.show_file(result_data, 'library')
         self.manager.current = 'file'
     
     def add_book(self, book_data):
