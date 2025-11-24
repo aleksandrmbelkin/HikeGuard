@@ -2,6 +2,7 @@ from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from kivy.core.window import Window
 from kivy.uix.screenmanager import FadeTransition
+from kivy.core.window import Window
 
 # Экраны
 from screens.search import SearchScreen
@@ -14,6 +15,7 @@ class HikeGuardApp(App):
     def build(self):
         # Настройка окна
         Window.size = (360, 800)
+        Window.set_icon('data/assets/icon.ico')
 
         self.screen_manager = ScreenManager()
         self.screen_manager.transition = FadeTransition(duration=0.2)
