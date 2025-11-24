@@ -39,8 +39,7 @@ class SemanticSearchEngine:
                     'score': score,
                     'index': int(idx),
                     'source': doc['source'],
-                    'page': doc['page'],
-                    'chunk_id': doc['chunk_id']
+                    'page': doc['page']
                 })
             elif len(results) >= top_k:
                 break
