@@ -95,27 +95,21 @@ class DatabaseScreen(Screen):
             text='Назад',
             font_size=dp(18),
             bold=True,
-            background_color=(0.3, 0.3, 0.3, 1),
+            background_color=(0, 0, 0, 0),
             color=(1, 1, 1, 1),
-            background_normal='',
-            size_hint_y=None,
-            height=dp(50)
+            background_normal=''
         )
-        
-        # Добавляем красивый фон для кнопки
-        with back_button.canvas.before:
-            Color(0.3, 0.3, 0.3, 1)
+        back_button.bind(on_press=self.go_back)
+
+        # Добавляем фон к контейнеру
+        with back_button_container.canvas.before:
+            Color(0.2, 0.2, 0.2, 1)
             self.back_button_bg = RoundedRectangle(
-                pos=back_button.pos,
-                size=back_button.size,
-                radius=[dp(25),]
+                pos=back_button_container.pos,
+                size=back_button_container.size,
+                radius=[dp(15),]
             )
-        back_button.bind(
-            pos=self.update_back_button_bg, 
-            size=self.update_back_button_bg,
-            on_press=self.go_back
-        )
-        
+        back_button_container.bind(pos=self.update_back_button_bg, size=self.update_back_button_bg)
         back_button_container.add_widget(back_button)
         main_layout.add_widget(back_button_container)
         
@@ -230,8 +224,9 @@ class DatabaseScreen(Screen):
         self.main_bg.size = instance.size
 
     def update_back_button_bg(self, instance, value):
-        self.back_button_bg.pos = instance.pos
-        self.back_button_bg.size = instance.size
+        if hasattr(self, 'back_button_bg'):
+            self.back_button_bg.pos = instance.pos
+            self.back_button_bg.size = instance.size
 
     def update_spinner_bg(self, instance, value):
         # Обновляем позицию и размер фона и обводки
