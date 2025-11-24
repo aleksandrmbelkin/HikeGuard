@@ -67,7 +67,8 @@ def cutting_up_texts(manual_paths):
 
 def create_default_embeddings():
     print('Создание эмбеддингов')
-    files = [f'data/documents/txt/{file}' for file in os.listdir("data/documents/txt")]
+    # files = [f'data/documents/txt/{file}' for file in os.listdir("data/documents/txt")]
+    files = ['data/documents/txt/osnovi.txt']
     docs = cutting_up_texts(files)
     
     creator = EmbeddingCreator()
