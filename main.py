@@ -32,7 +32,7 @@ class HikeGuardApp(App):
         results_screen = ResultsScreen()
         self.screen_manager.add_widget(results_screen)
 
-        # Экран базы данных
+        # Экран библиотеки
         database_screen = LibraryScreen()
         self.screen_manager.add_widget(database_screen)
 

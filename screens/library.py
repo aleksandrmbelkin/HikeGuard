@@ -8,7 +8,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.graphics import Rectangle, Color, RoundedRectangle
 from kivy.metrics import dp
 
-# Экран БД
+# Экран Библиотеки
 class LibraryScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
